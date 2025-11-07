@@ -14,20 +14,20 @@ import { useMemo } from "react";
 const REFETCH_INTERVAL = 10000; // 10 seconds
 
 export function useAaveData(address?: `0x${string}`) {
-  const { data: ethBalance, isLoading: isEthBalanceLoading } = useBalance({
+  const { data: ethBalance, isLoading: isEthBalanceLoading, error: ethBalanceError } = useBalance({
     address,
     chainId: 8453,
     query: { refetchInterval: REFETCH_INTERVAL, enabled: !!address },
   });
 
-  const { data: usdcBalance, isLoading: isUsdcBalanceLoading } = useBalance({
+  const { data: usdcBalance, isLoading: isUsdcBalanceLoading, error: usdcBalanceError } = useBalance({
     address,
     token: USDC_ADDRESS,
     chainId: 8453,
     query: { refetchInterval: REFETCH_INTERVAL, enabled: !!address },
   });
 
-  const { data: ethReserveData, isLoading: isEthApyLoading } = useReadContract({
+  const { data: ethReserveData, isLoading: isEthApyLoading, error: ethApyError } = useReadContract({
     address: POOL_DATA_PROVIDER,
     abi: DATA_PROVIDER_ABI,
     functionName: 'getReserveData',
@@ -35,17 +35,15 @@ export function useAaveData(address?: `0x${string}`) {
     chainId: 8453,
     query: { refetchInterval: REFETCH_INTERVAL },
   });
-  
-  const { data: usdcReserveData, isLoading: isUsdcApyLoading } = useReadContract({
+
+  const { data: usdcReserveData, isLoading: isUsdcApyLoading, error: usdcApyError } = useReadContract({
     address: POOL_DATA_PROVIDER,
     abi: DATA_PROVIDER_ABI,
     functionName: 'getReserveData',
     args: [USDC_ADDRESS],
     chainId: 8453,
     query: { refetchInterval: REFETCH_INTERVAL },
-  });
-  
-  const { data: userEthData, isLoading: isUserEthDataLoading, refetch: refetchUserEthData } = useReadContract({
+  });  const { data: userEthData, isLoading: isUserEthDataLoading, refetch: refetchUserEthData } = useReadContract({
     address: POOL_DATA_PROVIDER,
     abi: DATA_PROVIDER_ABI,
     functionName: 'getUserReserveData',
@@ -63,12 +61,26 @@ export function useAaveData(address?: `0x${string}`) {
     query: { refetchInterval: REFETCH_INTERVAL, enabled: !!address },
   });
   
-  const calculateApy = (liquidityRate: bigint) => {
-    const RAY = 10n ** 27n;
-    const SECONDS_PER_YEAR = 31536000;
-    const depositAPR = Number(liquidityRate) / Number(RAY);
-    const depositAPY = (Math.pow(1 + (depositAPR / SECONDS_PER_YEAR), SECONDS_PER_YEAR) - 1);
-    return depositAPY;
+  const calculateApy = (liquidityRate: bigint | undefined) => {
+    try {
+      if (!liquidityRate) return 0;
+      
+      const RAY = 10n ** 27n;
+      const SECONDS_PER_YEAR = 31536000;
+      const depositAPR = Number(liquidityRate) / Number(RAY);
+      const depositAPY = (Math.pow(1 + (depositAPR / SECONDS_PER_YEAR), SECONDS_PER_YEAR) - 1);
+      
+      // Sanity check for unrealistic APY values
+      if (depositAPY < 0 || depositAPY > 1) {
+        console.warn('Unrealistic APY calculated:', depositAPY);
+        return 0;
+      }
+      
+      return depositAPY;
+    } catch (error) {
+      console.error('Error calculating APY:', error);
+      return 0;
+    }
   }
 
   const ethApy = useMemo(() => ethReserveData ? calculateApy(ethReserveData[3]) : 0, [ethReserveData]);
@@ -83,11 +95,20 @@ export function useAaveData(address?: `0x${string}`) {
     query: { enabled: !!address }
   });
 
+  const errors: string[] = [];
+  if (ethBalanceError) errors.push('Failed to fetch ETH balance');
+  if (usdcBalanceError) errors.push('Failed to fetch USDC balance');
+  if (ethApyError) errors.push('Failed to fetch ETH APY');
+  if (usdcApyError) errors.push('Failed to fetch USDC APY');
+
+  const error = errors.length > 0 ? errors.join(', ') : undefined;
+
   return {
-    ethBalance: ethBalance?.value ?? 0n,
-    usdcBalance: usdcBalance?.value ?? 0n,
+    ethBalance: ethBalance?.value ?? BigInt(0),
+    usdcBalance: usdcBalance?.value ?? BigInt(0),
     ethApy,
     usdcApy,
+    error,
     userEthData: userEthData?.[0] ?? 0n,
     userUsdcData: userUsdcData?.[0] ?? 0n,
     usdcAllowance: usdcAllowance ?? 0n,

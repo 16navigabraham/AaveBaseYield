@@ -11,13 +11,14 @@ import { useWriteContract, useWaitForTransactionReceipt } from "wagmi";
 import { useToast } from "@/hooks/use-toast";
 import { parseUnits, maxUint256, formatUnits } from "viem";
 import { AAVE_POOL_ABI, AAVE_POOL_ADDRESS, ERC20_ABI, USDC_ADDRESS, WETH_ADDRESS, ETH_DECIMALS, USDC_DECIMALS } from "@/lib/constants";
-import { PlusCircle, Loader2 } from "lucide-react";
+import { PlusCircle, Loader2, HelpCircle } from "lucide-react";
+import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip";
 
 export function DepositCard({ address }: { address: `0x${string}` }) {
   const [asset, setAsset] = useState<'ETH' | 'USDC'>('USDC');
   const [amount, setAmount] = useState('');
   
-  const { ethBalance, usdcBalance, ethApy, usdcApy, isLoading: isDataLoading, usdcAllowance, refetch } = useAaveData(address);
+  const { ethBalance, usdcBalance, ethApy, usdcApy, isLoading: isDataLoading, usdcAllowance, error, refetch } = useAaveData(address);
   const { toast } = useToast();
   const { data: hash, writeContractAsync, isPending } = useWriteContract();
 
@@ -133,8 +134,26 @@ export function DepositCard({ address }: { address: `0x${string}` }) {
 
         <div className="mt-6 space-y-4">
             <div className="flex justify-between items-center text-sm">
-                <span className="text-muted-foreground">Current APY 📈</span>
-                {isDataLoading ? <Skeleton className="h-5 w-20" /> : <span className="font-semibold text-green-400">{(currentApy * 100).toFixed(2)}%</span>}
+                <div className="flex items-center gap-2">
+                  <Tooltip>
+                    <TooltipTrigger>
+                      <span className="text-muted-foreground flex items-center gap-1">
+                        Current APY 📈
+                        <HelpCircle className="h-4 w-4" />
+                      </span>
+                    </TooltipTrigger>
+                    <TooltipContent className="max-w-xs">
+                      <p>Annual Percentage Yield (APY) shows your expected yearly returns, including compound interest. This rate updates based on market conditions.</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </div>
+                {isDataLoading ? (
+                  <Skeleton className="h-5 w-20" />
+                ) : error ? (
+                  <span className="text-destructive">Failed to load APY</span>
+                ) : (
+                  <span className="font-semibold text-green-400">{(currentApy * 100).toFixed(2)}%</span>
+                )}
             </div>
             <div className="space-y-2">
                 <label htmlFor="amount" className="text-sm font-medium text-muted-foreground">Amount</label>
