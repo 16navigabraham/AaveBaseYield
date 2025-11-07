@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useAccount, useWriteContract, useWaitForTransactionReceipt } from "wagmi";
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
-import { Bank, Coins, Loader2, MinusCircle, TrendingUp } from "lucide-react";
+import { Landmark, Coins, Loader2, MinusCircle, TrendingUp } from "lucide-react";
 import { useAaveData } from "@/hooks/use-aave-data";
 import { formatBigInt } from "@/lib/utils";
 import { Skeleton } from "./ui/skeleton";
@@ -69,7 +69,7 @@ export function PositionCard({ address }: { address: `0x${string}` }) {
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center gap-2 text-lg font-semibold">
-          <Bank className="h-5 w-5 text-primary" />
+          <Landmark className="h-5 w-5 text-primary" />
           Your Aave Position
         </CardTitle>
       </CardHeader>
