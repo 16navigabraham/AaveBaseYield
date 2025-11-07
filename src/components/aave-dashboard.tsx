@@ -1,10 +1,10 @@
 "use client";
 
 import { useAccount } from "wagmi";
-import { ConnectWallet } from "./connect-wallet";
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 import { Alert, AlertDescription, AlertTitle } from "./ui/alert";
 import { Landmark, Link, Wallet } from "lucide-react";
+import { AccountDisplay } from "./account-display";
 import { BalanceCard } from "./balance-card";
 import { DepositCard } from "./deposit-card";
 import { PositionCard } from "./position-card";
@@ -38,7 +38,7 @@ export function AaveDashboard() {
           <h1 className="font-headline">AaveBaseYield</h1>
         </div>
         <div>
-          <ConnectWallet />
+          <AccountDisplay />
         </div>
       </header>
       
