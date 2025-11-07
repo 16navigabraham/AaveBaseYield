@@ -42,25 +42,6 @@ export function ConnectWallet() {
     );
   }
 
-  return (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <Button>
-          <Wallet className="mr-2 h-4 w-4" />
-          Connect Wallet
-          <ChevronDown className="ml-2 h-4 w-4" />
-        </Button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent align="end">
-        {connectors.filter(c => c.type !== 'injected' || (c.type === 'injected' && c.id !== 'io.metamask.mobile')).map((connector) => (
-          <DropdownMenuItem
-            key={connector.uid}
-            onClick={() => connect({ connector })}
-          >
-            {connector.name}
-          </DropdownMenuItem>
-        ))}
-      </DropdownMenuContent>
-    </DropdownMenu>
-  );
+  // @ts-ignore
+  return <appkit-button />;
 }

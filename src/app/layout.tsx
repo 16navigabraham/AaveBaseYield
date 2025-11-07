@@ -8,6 +8,14 @@ export const metadata: Metadata = {
   description: 'One-Click Aave Yield Deposit on Base Mainnet',
 };
 
+declare global {
+  namespace JSX {
+    interface IntrinsicElements {
+      'appkit-button': React.DetailedHTMLProps<React.HTMLAttributes<HTMLElement>, HTMLElement>;
+    }
+  }
+}
+
 export default function RootLayout({
   children,
 }: Readonly<{
