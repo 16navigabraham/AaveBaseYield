@@ -2,13 +2,16 @@
 
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import type { ReactNode } from 'react';
-import { WagmiProvider, createConfig, http } from 'wagmi';
+import { WagmiProvider } from 'wagmi';
 import { base } from 'wagmi/chains';
-import { injected, walletConnect, coinbaseWallet } from 'wagmi/connectors';
 import { WagmiAdapter } from '@reown/appkit-adapter-wagmi';
 import { createAppKit } from '@reown/appkit/react';
 
-const projectId = 'd45a9a449547537b010834a340b07e5b'; // Please replace with your own WalletConnect Project ID
+const projectId = process.env.NEXT_PUBLIC_PROJECT_ID;
+
+if (!projectId) {
+  throw new Error('NEXT_PUBLIC_PROJECT_ID is not set');
+}
 
 const wagmiAdapter = new WagmiAdapter({
   projectId,
