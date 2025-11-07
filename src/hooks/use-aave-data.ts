@@ -33,7 +33,17 @@ export function useAaveData(address?: `0x${string}`) {
     functionName: 'getReserveData',
     args: [WETH_ADDRESS],
     chainId: 8453,
-    query: { refetchInterval: REFETCH_INTERVAL },
+    query: { 
+      refetchInterval: REFETCH_INTERVAL,
+      onError: (error) => {
+        console.error('Error fetching ETH reserve data:', error);
+        console.error('Contract call details:', {
+          address: POOL_DATA_PROVIDER,
+          functionName: 'getReserveData',
+          args: [WETH_ADDRESS]
+        });
+      }
+    },
   });
 
   const { data: usdcReserveData, isLoading: isUsdcApyLoading, error: usdcApyError } = useReadContract({
@@ -63,12 +73,20 @@ export function useAaveData(address?: `0x${string}`) {
   
   const calculateApy = (liquidityRate: bigint | undefined) => {
     try {
-      if (!liquidityRate) return 0;
+      if (!liquidityRate) {
+        console.warn('No liquidity rate provided for APY calculation');
+        return 0;
+      }
       
       const RAY = 10n ** 27n;
       const SECONDS_PER_YEAR = 31536000;
+      
+      console.log('Raw liquidity rate:', liquidityRate.toString());
       const depositAPR = Number(liquidityRate) / Number(RAY);
+      console.log('Calculated APR:', depositAPR);
+      
       const depositAPY = (Math.pow(1 + (depositAPR / SECONDS_PER_YEAR), SECONDS_PER_YEAR) - 1);
+      console.log('Calculated APY:', depositAPY);
       
       // Sanity check for unrealistic APY values
       if (depositAPY < 0 || depositAPY > 1) {
@@ -79,12 +97,23 @@ export function useAaveData(address?: `0x${string}`) {
       return depositAPY;
     } catch (error) {
       console.error('Error calculating APY:', error);
+      console.error('Error details:', {
+        liquidityRate: liquidityRate?.toString(),
+        error: error instanceof Error ? error.message : String(error)
+      });
       return 0;
     }
   }
 
-  const ethApy = useMemo(() => ethReserveData ? calculateApy(ethReserveData[3]) : 0, [ethReserveData]);
-  const usdcApy = useMemo(() => usdcReserveData ? calculateApy(usdcReserveData[3]) : 0, [usdcReserveData]);
+  const ethApy = useMemo(() => {
+    if (!ethReserveData) return 0;
+    return calculateApy(ethReserveData.liquidityRate);
+  }, [ethReserveData]);
+
+  const usdcApy = useMemo(() => {
+    if (!usdcReserveData) return 0;
+    return calculateApy(usdcReserveData.liquidityRate);
+  }, [usdcReserveData]);
 
   const {data: usdcAllowance, isLoading: isUsdcAllowanceLoading, refetch: refetchUsdcAllowance} = useReadContract({
     address: USDC_ADDRESS,
@@ -109,8 +138,8 @@ export function useAaveData(address?: `0x${string}`) {
     ethApy,
     usdcApy,
     error,
-    userEthData: userEthData?.[0] ?? 0n,
-    userUsdcData: userUsdcData?.[0] ?? 0n,
+    userEthData: userEthData?.currentATokenBalance ?? 0n,
+    userUsdcData: userUsdcData?.currentATokenBalance ?? 0n,
     usdcAllowance: usdcAllowance ?? 0n,
     isLoading: isEthBalanceLoading || isUsdcBalanceLoading || isEthApyLoading || isUsdcApyLoading || isUserEthDataLoading || isUserUsdcDataLoading || isUsdcAllowanceLoading,
     refetch: () => {

@@ -22,8 +22,48 @@ export const WETH_ABI = [
 ] as const;
 
 export const DATA_PROVIDER_ABI = [
-  "function getReserveData(address asset) view returns (tuple(uint256 unbacked, uint256 scaledATokenTotalSupply, uint256 totalScaledVariableDebt, uint256 liquidityRate, uint256 variableBorrowRate, uint256 stableBorrowRate, uint256 averageStableBorrowRate, uint256 liquidityIndex, uint256 variableBorrowIndex, uint40 lastUpdateTimestamp) configuration)",
-  "function getUserReserveData(address asset, address user) view returns (uint256 currentATokenBalance, uint256 currentStableDebt, uint256 currentVariableDebt, uint256 principalStableDebt, uint256 scaledVariableDebt, uint256 stableBorrowRate, uint256 liquidityRate, uint40 stableRateLastUpdated, bool usageAsCollateralEnabled)"
+  {
+    inputs: [{ name: "asset", type: "address" }],
+    name: "getReserveData",
+    outputs: [{
+      components: [
+        { name: "unbacked", type: "uint256" },
+        { name: "scaledATokenTotalSupply", type: "uint256" },
+        { name: "totalScaledVariableDebt", type: "uint256" },
+        { name: "liquidityRate", type: "uint256" },
+        { name: "variableBorrowRate", type: "uint256" },
+        { name: "stableBorrowRate", type: "uint256" },
+        { name: "averageStableBorrowRate", type: "uint256" },
+        { name: "liquidityIndex", type: "uint256" },
+        { name: "variableBorrowIndex", type: "uint256" },
+        { name: "lastUpdateTimestamp", type: "uint40" }
+      ],
+      name: "configuration",
+      type: "tuple"
+    }],
+    stateMutability: "view",
+    type: "function"
+  },
+  {
+    inputs: [
+      { name: "asset", type: "address" },
+      { name: "user", type: "address" }
+    ],
+    name: "getUserReserveData",
+    outputs: [
+      { name: "currentATokenBalance", type: "uint256" },
+      { name: "currentStableDebt", type: "uint256" },
+      { name: "currentVariableDebt", type: "uint256" },
+      { name: "principalStableDebt", type: "uint256" },
+      { name: "scaledVariableDebt", type: "uint256" },
+      { name: "stableBorrowRate", type: "uint256" },
+      { name: "liquidityRate", type: "uint256" },
+      { name: "stableRateLastUpdated", type: "uint40" },
+      { name: "usageAsCollateralEnabled", type: "bool" }
+    ],
+    stateMutability: "view",
+    type: "function"
+  }
 ] as const;
 
 export const USDC_DECIMALS = 6;

@@ -21,7 +21,10 @@ const wagmiAdapter = new WagmiAdapter({
       ...base,
       rpcUrls: {
         default: {
-          http: ["https://eth-mainnet.g.alchemy.com/v2/gYSikyrGiHWg-0Je4zVby"],
+          http: ["https://base-mainnet.g.alchemy.com/v2/gYSikyrGiHWg-0Je4zVby"],
+        },
+        public: {
+          http: ["https://mainnet.base.org"],
         },
       },
     },
