@@ -66,5 +66,6 @@ export const DATA_PROVIDER_ABI = [
   }
 ] as const;
 
+
 export const USDC_DECIMALS = 6;
 export const ETH_DECIMALS = 18;
