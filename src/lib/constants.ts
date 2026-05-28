@@ -9,6 +9,7 @@ export const AAVE_POOL_ABI = [
   "function getUserAccountData(address user) view returns (uint256 totalCollateralBase, uint256 totalDebtBase, uint256 availableBorrowsBase, uint256 currentLiquidationThreshold, uint256 ltv, uint256 healthFactor)"
 ] as const;
 
+
 export const ERC20_ABI = [
   "function balanceOf(address owner) view returns (uint256)",
   "function approve(address spender, uint256 amount) returns (bool)",
@@ -16,10 +17,12 @@ export const ERC20_ABI = [
   "function decimals() view returns (uint8)"
 ] as const;
 
+
 export const WETH_ABI = [
     "function deposit() payable",
     "function withdraw(uint256 wad)"
 ] as const;
+
 
 export const DATA_PROVIDER_ABI = [
   {
