@@ -14,6 +14,8 @@ if (!projectId) {
 }
 
 
+const alchemyKey = process.env.NEXT_PUBLIC_ALCHEMY_KEY;
+
 const wagmiAdapter = new WagmiAdapter({
   projectId,
   networks: [
@@ -21,7 +23,11 @@ const wagmiAdapter = new WagmiAdapter({
       ...base,
       rpcUrls: {
         default: {
-          http: ["https://base-mainnet.g.alchemy.com/v2/gYSikyrGiHWg-0Je4zVby"],
+          http: [
+            alchemyKey
+              ? `https://base-mainnet.g.alchemy.com/v2/${alchemyKey}`
+              : "https://mainnet.base.org",
+          ],
         },
         public: {
           http: ["https://mainnet.base.org"],
