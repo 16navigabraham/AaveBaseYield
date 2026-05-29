@@ -39,7 +39,7 @@ export class ErrorBoundary extends Component<Props, State> {
           <div className="max-w-md p-6 text-center">
             <h2 className="text-xl font-semibold mb-4">Something went wrong</h2>
             <p className="text-muted-foreground mb-4">
-              We apologize for the inconvenience. Please try refreshing the page.
+              We apologize for the inconvenience. Please refresh the page.
             </p>
             <button
               onClick={() => window.location.reload()}
