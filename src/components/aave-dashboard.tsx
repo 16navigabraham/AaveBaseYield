@@ -1,84 +1,66 @@
 "use client";
 
 import { useAccount } from "wagmi";
-import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
-import { Alert, AlertDescription, AlertTitle } from "./ui/alert";
-import { Landmark, Link, Wallet } from "lucide-react";
-import { ConnectWallet } from "./connect-wallet";
 import { BalanceCard } from "./balance-card";
 import { DepositCard } from "./deposit-card";
 import { PositionCard } from "./position-card";
 import { WalkthroughModal } from "./walkthrough-modal";
 import { useWalkthroughState } from "@/hooks/use-walkthrough-state";
 import { useEffect } from "react";
+import { Wallet } from "lucide-react";
+import { Button } from "./ui/button";
 
 export function AaveDashboard() {
   const { isConnected, address } = useAccount();
-  const {
-    hasSeenWalkthrough,
-    showWalkthrough,
-    handleShowWalkthrough,
-    handleCloseWalkthrough,
-  } = useWalkthroughState();
+  const { hasSeenWalkthrough, showWalkthrough, handleShowWalkthrough, handleCloseWalkthrough } =
+    useWalkthroughState();
 
-  // Show walkthrough when user connects wallet for the first time
   useEffect(() => {
-    if (isConnected && !hasSeenWalkthrough) {
-      handleShowWalkthrough();
-    }
+    if (isConnected && !hasSeenWalkthrough) handleShowWalkthrough();
   }, [isConnected, hasSeenWalkthrough, handleShowWalkthrough]);
 
+  if (!isConnected || !address) {
+    return (
+      <div className="flex flex-col items-center justify-center py-28 gap-6 text-center">
+        <div className="flex h-14 w-14 items-center justify-center rounded-full border border-border bg-card">
+          <Wallet className="h-6 w-6 text-muted-foreground" />
+        </div>
+        <div className="space-y-1">
+          <h2 className="text-lg font-semibold">Connect your wallet</h2>
+          <p className="text-sm text-muted-foreground max-w-xs">
+            Connect to view your balances and start depositing into Aave.
+          </p>
+        </div>
+        <appkit-button>
+          <Button>Connect Wallet</Button>
+        </appkit-button>
+      </div>
+    );
+  }
+
   return (
-    <div className="flex flex-col gap-8">
-      <header className="flex flex-col sm:flex-row justify-between items-center gap-4">
-        <div className="flex items-center gap-3 text-2xl font-bold text-foreground">
-          <div className="p-2 bg-primary/10 rounded-lg">
-             <Landmark className="h-7 w-7 text-primary" />
-          </div>
-          <h1 className="font-headline">AaveBaseYield</h1>
-        </div>
-        <div>
-          <ConnectWallet />
-        </div>
-      </header>
-      
-      {isConnected && address ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+    <>
+      <div className="space-y-2 mb-8">
+        <h1 className="text-2xl font-bold tracking-tight">Portfolio</h1>
+        <p className="text-sm text-muted-foreground">
+          Manage your Aave positions on Base Mainnet.
+        </p>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
+        {/* Left column: balance + positions */}
+        <div className="lg:col-span-1 space-y-5">
           <BalanceCard address={address} />
           <PositionCard address={address} />
         </div>
-      ) : (
-        <Card className="w-full">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Wallet className="h-5 w-5" />
-              Connect Your Wallet
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-muted-foreground">Please connect your wallet to view your balances and interact with Aave.</p>
-          </CardContent>
-        </Card>
-      )}
 
-      {isConnected && address && (
-        <div>
+        {/* Right column: deposit */}
+        <div className="lg:col-span-2">
           <DepositCard address={address} />
         </div>
-      )}
+      </div>
 
-      <footer className="text-center text-muted-foreground text-sm mt-8">
-        <p>Built for Aave on Base Mainnet.</p>
-        <a href="https://aave.com/" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 hover:text-primary transition-colors">
-            Learn more about Aave <Link className="h-3 w-3" />
-        </a>
-      </footer>
-
-      {/* Walkthrough Modal */}
-      <WalkthroughModal 
-        isOpen={showWalkthrough}
-        onClose={handleCloseWalkthrough}
-      />
-    </div>
+      <WalkthroughModal isOpen={showWalkthrough} onClose={handleCloseWalkthrough} />
+    </>
   );
 }

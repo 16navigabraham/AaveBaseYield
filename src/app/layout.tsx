@@ -4,22 +4,15 @@ import { Web3Provider } from '@/components/providers/web3-provider';
 import { Toaster } from '@/components/ui/toaster';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { ErrorBoundary } from '@/components/error-boundary';
+import { ThemeProvider } from '@/components/theme-provider';
 
 export const metadata: Metadata = {
   title: 'AaveBaseYield',
-  description: 'One-Click Aave Yield Deposit on Base Mainnet',
+  description: 'Institutional-grade yield on Base Mainnet, powered by Aave.',
   icons: {
     icon: [
-      {
-        url: '/cat.jpg',
-        sizes: '32x32',
-        type: 'image/jpeg'
-      },
-      {
-        url: '/cat.jpg',
-        sizes: '16x16',
-        type: 'image/jpeg'
-      }
+      { url: '/cat.jpg', sizes: '32x32', type: 'image/jpeg' },
+      { url: '/cat.jpg', sizes: '16x16', type: 'image/jpeg' },
     ],
     apple: '/cat.jpg',
   },
@@ -35,28 +28,28 @@ declare global {
 
 export default function RootLayout({
   children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
+}: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en" className="dark">
+    <html lang="en" suppressHydrationWarning>
       <head>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link
-          href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+          href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
           rel="stylesheet"
         />
       </head>
-      <body className="font-body antialiased">
-        <ErrorBoundary>
-          <Web3Provider>
-            <TooltipProvider>
-              {children}
-              <Toaster />
-            </TooltipProvider>
-          </Web3Provider>
-        </ErrorBoundary>
+      <body className="font-body antialiased min-h-screen flex flex-col">
+        <ThemeProvider attribute="class" defaultTheme="dark" enableSystem={false}>
+          <ErrorBoundary>
+            <Web3Provider>
+              <TooltipProvider>
+                {children}
+                <Toaster />
+              </TooltipProvider>
+            </Web3Provider>
+          </ErrorBoundary>
+        </ThemeProvider>
       </body>
     </html>
   );
