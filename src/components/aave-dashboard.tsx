@@ -40,7 +40,7 @@ export function AaveDashboard() {
 
   return (
     <>
-      <div className="space-y-2 mb-8">
+      <div className="space-y-2 mb-8 animate-fade-down">
         <h1 className="text-2xl font-bold tracking-tight">Portfolio</h1>
         <p className="text-sm text-muted-foreground">
           Manage your Aave positions on Base Mainnet.
@@ -50,12 +50,16 @@ export function AaveDashboard() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
         {/* Left column: balance + positions */}
         <div className="lg:col-span-1 space-y-5">
-          <BalanceCard address={address} />
-          <PositionCard address={address} />
+          <div className="animate-fade-up delay-75">
+            <BalanceCard address={address} />
+          </div>
+          <div className="animate-fade-up delay-150">
+            <PositionCard address={address} />
+          </div>
         </div>
 
         {/* Right column: deposit */}
-        <div className="lg:col-span-2">
+        <div className="lg:col-span-2 animate-fade-up delay-225">
           <DepositCard address={address} />
         </div>
       </div>
