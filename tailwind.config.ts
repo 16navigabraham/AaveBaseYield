@@ -17,9 +17,10 @@ export default {
     },
     extend: {
       fontFamily: {
-        body: ['Inter', 'sans-serif'],
-        headline: ['Inter', 'sans-serif'],
-        code: ['monospace'],
+        body: ['Space Grotesk', 'sans-serif'],
+        headline: ['Space Grotesk', 'sans-serif'],
+        mono: ['Space Mono', 'monospace'],
+        code: ['Space Mono', 'monospace'],
       },
       colors: {
         background: 'hsl(var(--background))',
