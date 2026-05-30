@@ -1,5 +1,7 @@
 import { TrendingUp, ExternalLink } from "lucide-react";
 
+const YEAR = new Date().getFullYear();
+
 export function Footer() {
   return (
     <footer className="border-t border-border/60 bg-background mt-auto">
@@ -32,7 +34,7 @@ export function Footer() {
               Base <ExternalLink className="h-3 w-3" />
             </a>
             <span className="text-muted-foreground/50">
-              © {new Date().getFullYear()}
+              © {YEAR}
             </span>
           </div>
         </div>
