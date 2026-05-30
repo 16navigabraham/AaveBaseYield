@@ -8,12 +8,7 @@ import { LoadingScreen } from "@/components/loading-screen";
 import { useAccount } from "wagmi";
 
 export default function Home() {
-  const { isConnected, isConnecting, isReconnecting } = useAccount();
-
-  if (isConnecting || isReconnecting) {
-    return <LoadingScreen />;
-  }
-
+  const { isConnected } = useAccount();
   return (
     <div className="flex flex-col min-h-screen bg-background animate-fade-in">
       <Navbar />

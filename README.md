@@ -12,6 +12,7 @@ AaveBaseYield is a streamlined web application that allows users to deposit ETH 
 - **Easy Withdrawals**: Withdraw your funds from Aave back to your wallet.
 - **Responsive Design**: A clean, modern, and responsive UI built with ShadCN UI and Tailwind CSS.
 
+
 ## 🛠️ Tech Stack
 
 - **Framework**: [Next.js](https://nextjs.org/) (with App Router)
@@ -22,6 +23,7 @@ AaveBaseYield is a streamlined web application that allows users to deposit ETH 
   - [Viem](https://viem.sh/): A TypeScript interface for Ethereum.
   - [Reown AppKit](https://reown.com/appkit): For the wallet connection user interface.
 - **Protocol**: [Aave V3](https://aave.com/) on Base Mainnet.
+
 
 ## 🚀 Getting Started
 
