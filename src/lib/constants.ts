@@ -16,11 +16,6 @@ export const ERC20_ABI = [
   "function decimals() view returns (uint8)"
 ] as const;
 
-export const WETH_ABI = [
-    "function deposit() payable",
-    "function withdraw(uint256 wad)"
-] as const;
-
 export const DATA_PROVIDER_ABI = [
   {
     inputs: [{ name: "asset", type: "address" }],

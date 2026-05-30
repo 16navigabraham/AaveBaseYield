@@ -26,41 +26,53 @@ export function DepositCard({ address }: { address: `0x${string}` }) {
     useAaveData(address);
   const { toast } = useToast();
   const { data: hash, writeContractAsync, isPending } = useWriteContract();
-  const { isLoading: isConfirming } = useWaitForTransactionReceipt({ hash });
+  const { isLoading: isConfirming, isSuccess: isConfirmed } = useWaitForTransactionReceipt({ hash });
 
   const currentApy = asset === "ETH" ? ethApy : usdcApy;
   const currentBalance = asset === "ETH" ? ethBalance : usdcBalance;
   const decimals = asset === "ETH" ? ETH_DECIMALS : USDC_DECIMALS;
 
-  const needsApproval = useMemo(() => {
-    if (asset !== "USDC" || !amount || parseFloat(amount) <= 0) return false;
-    return parseUnits(amount, decimals) > usdcAllowance;
-  }, [asset, amount, usdcAllowance, decimals]);
+  const amountBigInt = useMemo(() => {
+    if (!amount || parseFloat(amount) <= 0) return 0n;
+    try { return parseUnits(amount, decimals); } catch { return 0n; }
+  }, [amount, decimals]);
 
-  useEffect(() => { if (isConfirming) refetch(); }, [isConfirming, refetch]);
+  const needsApproval = useMemo(() => {
+    if (asset !== "USDC" || amountBigInt === 0n) return false;
+    return amountBigInt > usdcAllowance;
+  }, [asset, amountBigInt, usdcAllowance]);
+
+  const exceedsBalance = amountBigInt > 0n && amountBigInt > currentBalance;
+
+  useEffect(() => { if (isConfirmed) refetch(); }, [isConfirmed, refetch]);
 
   const handleAction = async () => {
-    if (!amount) return;
+    if (!amount || amountBigInt === 0n) return;
     if (asset === "USDC" && needsApproval) {
       try {
         await writeContractAsync({ address: USDC_ADDRESS, abi: ERC20_ABI, functionName: "approve", args: [AAVE_POOL_ADDRESS, maxUint256] });
-        toast({ title: "Approval Sent", description: "Approve confirmed. You can now deposit." });
-      } catch {
-        toast({ variant: "destructive", title: "Approval Failed", description: "Could not send approval transaction." });
+        toast({ title: "Approval Submitted", description: "Waiting for confirmation before deposit is available." });
+      } catch (err: unknown) {
+        const code = (err as { code?: number })?.code;
+        if (code === 4001) {
+          toast({ variant: "destructive", title: "Approval Cancelled", description: "You rejected the approval request." });
+        } else {
+          toast({ variant: "destructive", title: "Approval Failed", description: "Could not send approval transaction." });
+        }
       }
     } else {
-      const amountToDeposit = parseUnits(amount, decimals);
       try {
-        if (asset === "ETH") {
-          await writeContractAsync({ address: AAVE_POOL_ADDRESS, abi: AAVE_POOL_ABI, functionName: "supply", args: [WETH_ADDRESS, amountToDeposit, address, 0], value: amountToDeposit });
-        } else {
-          await writeContractAsync({ address: AAVE_POOL_ADDRESS, abi: AAVE_POOL_ABI, functionName: "supply", args: [USDC_ADDRESS, amountToDeposit, address, 0] });
-        }
+        await writeContractAsync({ address: AAVE_POOL_ADDRESS, abi: AAVE_POOL_ABI, functionName: "supply", args: [USDC_ADDRESS, amountBigInt, address, 0] });
         toast({ title: "Deposit Sent", description: "Your funds are on their way to Aave." });
         setAmount("");
         refetch();
-      } catch {
-        toast({ title: "Deposit Failed", description: "Something went wrong. Please try again.", variant: "destructive" });
+      } catch (err: unknown) {
+        const code = (err as { code?: number })?.code;
+        if (code === 4001) {
+          toast({ variant: "destructive", title: "Deposit Cancelled", description: "You rejected the transaction." });
+        } else {
+          toast({ title: "Deposit Failed", description: "Something went wrong. Please try again.", variant: "destructive" });
+        }
       }
     }
   };
@@ -108,7 +120,7 @@ export function DepositCard({ address }: { address: `0x${string}` }) {
         <Tabs value={asset} onValueChange={(v) => { setAmount(""); setAsset(v as "ETH" | "USDC"); }}>
           <TabsList className="grid w-full grid-cols-2 bg-muted/50">
             <TabsTrigger value="USDC" className="text-sm font-medium">USDC</TabsTrigger>
-            <TabsTrigger value="ETH" className="text-sm font-medium">ETH</TabsTrigger>
+            <TabsTrigger value="ETH" className="text-sm font-medium" disabled title="ETH deposits require WETH gateway — coming soon">ETH</TabsTrigger>
           </TabsList>
         </Tabs>
 
@@ -174,7 +186,12 @@ export function DepositCard({ address }: { address: `0x${string}` }) {
               </span>
             </div>
           )}
-          {asset === "USDC" && needsApproval && (
+          {exceedsBalance && (
+            <p className="text-[11px] text-destructive border-t border-border/40 pt-2">
+              Amount exceeds your wallet balance.
+            </p>
+          )}
+          {!exceedsBalance && asset === "USDC" && needsApproval && (
             <p className="text-[11px] text-amber-500 border-t border-border/40 pt-2">
               One-time approval required before your first USDC deposit.
             </p>
@@ -183,7 +200,7 @@ export function DepositCard({ address }: { address: `0x${string}` }) {
 
         <Button
           className="w-full h-10 font-semibold"
-          disabled={!amount || parseFloat(amount) <= 0 || isPending || isConfirming}
+          disabled={!amount || amountBigInt === 0n || exceedsBalance || isPending || isConfirming}
           onClick={handleAction}
         >
           {isPending || isConfirming ? (

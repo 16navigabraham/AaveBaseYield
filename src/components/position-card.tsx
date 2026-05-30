@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useWriteContract, useWaitForTransactionReceipt } from "wagmi";
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Loader2, MinusCircle, BarChart2 } from "lucide-react";
@@ -20,18 +20,26 @@ export function PositionCard({ address }: { address: `0x${string}` }) {
   const { userEthData, userUsdcData, isLoading, refetch } = useAaveData(address);
   const { toast } = useToast();
   const { writeContractAsync, data: hash, isPending } = useWriteContract();
-  const { isLoading: isConfirming } = useWaitForTransactionReceipt({ hash });
+  const { isLoading: isConfirming, isSuccess: isConfirmed } = useWaitForTransactionReceipt({ hash });
 
   const currentBalance = asset === "ETH" ? userEthData : userUsdcData;
   const decimals = asset === "ETH" ? ETH_DECIMALS : USDC_DECIMALS;
   const assetAddress = asset === "ETH" ? WETH_ADDRESS : USDC_ADDRESS;
   const hasPosition = currentBalance > 0n;
 
+  const withdrawBigInt = useMemo(() => {
+    if (!withdrawAmount || parseFloat(withdrawAmount) <= 0) return 0n;
+    try { return parseUnits(withdrawAmount, decimals); } catch { return 0n; }
+  }, [withdrawAmount, decimals]);
+
+  const exceedsPosition = withdrawBigInt > 0n && withdrawBigInt > currentBalance;
+
+  useEffect(() => { if (isConfirmed) refetch(); }, [isConfirmed, refetch]);
+
   const handleWithdraw = async () => {
-    if (!withdrawAmount) return;
-    const isMax =
-      parseFloat(withdrawAmount) === parseFloat(formatUnits(currentBalance, decimals));
-    const amountToWithdraw = isMax ? maxUint256 : parseUnits(withdrawAmount, decimals);
+    if (!withdrawAmount || withdrawBigInt === 0n) return;
+    const isMax = withdrawBigInt >= currentBalance;
+    const amountToWithdraw = isMax ? maxUint256 : withdrawBigInt;
 
     try {
       await writeContractAsync({
@@ -43,8 +51,13 @@ export function PositionCard({ address }: { address: `0x${string}` }) {
       toast({ title: "Withdrawal Sent", description: "Withdrawing funds from Aave..." });
       setWithdrawAmount("");
       refetch();
-    } catch {
-      toast({ title: "Withdrawal Failed", description: "Something went wrong. Please try again.", variant: "destructive" });
+    } catch (err: unknown) {
+      const code = (err as { code?: number })?.code;
+      if (code === 4001) {
+        toast({ variant: "destructive", title: "Withdrawal Cancelled", description: "You rejected the transaction." });
+      } else {
+        toast({ title: "Withdrawal Failed", description: "Something went wrong. Please try again.", variant: "destructive" });
+      }
     }
   };
 
@@ -101,6 +114,10 @@ export function PositionCard({ address }: { address: `0x${string}` }) {
           </div>
         )}
 
+        {exceedsPosition && (
+          <p className="text-[11px] text-destructive">Amount exceeds your deposited position.</p>
+        )}
+
         {!hasPosition && !isLoading && (
           <p className="text-xs text-muted-foreground text-center py-2">
             No active position. Make a deposit to start earning.
@@ -114,7 +131,7 @@ export function PositionCard({ address }: { address: `0x${string}` }) {
             className="w-full h-9 text-sm"
             variant="outline"
             onClick={handleWithdraw}
-            disabled={!withdrawAmount || parseFloat(withdrawAmount) <= 0 || isPending || isConfirming}
+            disabled={!withdrawAmount || withdrawBigInt === 0n || exceedsPosition || isPending || isConfirming}
           >
             {isPending || isConfirming ? (
               <Loader2 className="mr-2 h-3.5 w-3.5 animate-spin" />

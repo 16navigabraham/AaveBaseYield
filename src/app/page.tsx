@@ -6,18 +6,11 @@ import { Navbar } from "@/components/navbar";
 import { Footer } from "@/components/footer";
 import { LoadingScreen } from "@/components/loading-screen";
 import { useAccount } from "wagmi";
-import { useEffect, useState } from "react";
 
 export default function Home() {
   const { isConnected, isConnecting, isReconnecting } = useAccount();
-  const [mounted, setMounted] = useState(false);
 
-  useEffect(() => {
-    const t = setTimeout(() => setMounted(true), 300);
-    return () => clearTimeout(t);
-  }, []);
-
-  if (!mounted || isConnecting || isReconnecting) {
+  if (isConnecting || isReconnecting) {
     return <LoadingScreen />;
   }
 

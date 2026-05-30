@@ -29,13 +29,13 @@ function calculateApy(liquidityRate: bigint | undefined): number {
 }
 
 export function useAaveData(address?: `0x${string}`) {
-  const { data: ethBalance, isLoading: isEthBalanceLoading, error: ethBalanceError } = useBalance({
+  const { data: ethBalance, isLoading: isEthBalanceLoading, error: ethBalanceError, refetch: refetchEthBalance } = useBalance({
     address,
     chainId: 8453,
     query: { refetchInterval: REFETCH_INTERVAL, enabled: !!address },
   });
 
-  const { data: usdcBalance, isLoading: isUsdcBalanceLoading, error: usdcBalanceError } = useBalance({
+  const { data: usdcBalance, isLoading: isUsdcBalanceLoading, error: usdcBalanceError, refetch: refetchUsdcBalance } = useBalance({
     address,
     token: USDC_ADDRESS,
     chainId: 8453,
@@ -78,14 +78,13 @@ export function useAaveData(address?: `0x${string}`) {
     query: { refetchInterval: REFETCH_INTERVAL, enabled: !!address },
   });
 
-  // Fix: use ERC20_ABI (not AAVE_POOL_ABI) — allowance() lives on the token contract
   const { data: usdcAllowance, isLoading: isUsdcAllowanceLoading, refetch: refetchUsdcAllowance } = useReadContract({
     address: USDC_ADDRESS,
     abi: ERC20_ABI,
     functionName: "allowance",
     args: [address!, AAVE_POOL_ADDRESS],
     chainId: 8453,
-    query: { enabled: !!address },
+    query: { enabled: !!address, refetchInterval: REFETCH_INTERVAL },
   });
 
   const ethApy = useMemo(() => calculateApy(ethReserveData?.liquidityRate), [ethReserveData]);
@@ -103,13 +102,15 @@ export function useAaveData(address?: `0x${string}`) {
     ethApy,
     usdcApy,
     error: errors.length > 0 ? errors.join(", ") : undefined,
-    userEthData: userEthData?.currentATokenBalance ?? 0n,
-    userUsdcData: userUsdcData?.currentATokenBalance ?? 0n,
-    usdcAllowance: usdcAllowance ?? 0n,
+    userEthData: userEthData?.[0] ?? 0n,
+    userUsdcData: userUsdcData?.[0] ?? 0n,
+    usdcAllowance: (usdcAllowance as bigint | undefined) ?? 0n,
     isLoading:
       isEthBalanceLoading || isUsdcBalanceLoading || isEthApyLoading ||
       isUsdcApyLoading || isUserEthDataLoading || isUserUsdcDataLoading || isUsdcAllowanceLoading,
     refetch: () => {
+      refetchEthBalance();
+      refetchUsdcBalance();
       refetchUserEthData();
       refetchUserUsdcData();
       refetchUsdcAllowance();
