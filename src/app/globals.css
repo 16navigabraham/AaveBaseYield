@@ -4,34 +4,6 @@
 
 @layer base {
   :root {
-<<<<<<< Updated upstream
-    /* Light mode — clean white + navy + gold */
-    --background: 220 36% 96%;
-    --foreground: 213 54% 11%;
-    --card: 0 0% 100%;
-    --card-foreground: 213 54% 11%;
-    --popover: 0 0% 100%;
-
-    --popover-foreground: 213 54% 11%;
-    --primary: 36 60% 40%;
-    --primary-foreground: 0 0% 100%;
-    --secondary: 214 31% 91%;
-    --secondary-foreground: 213 54% 11%;
-    --muted: 214 31% 91%;
-    --muted-foreground: 213 16% 41%;
-    --accent: 36 60% 40%;
-    --accent-foreground: 0 0% 100%=======
-    --popover-foreground: 224 71.4% 4.2%;
-    --primary: 197 71% 53%;
-    --primary-foreground: 0 0% 100%;
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
-    --muted: 210 40% 96.2%;
-    --muted-foreground: 215 20.2% 65.2%;
-    --accent: 174 39% 60%;
-    --accent-foreground: 222.2 47.4% 11.2%;
-
-=======
     /* Light mode — warm cream + amber gold */
     --background: 38 30% 95%;
     --foreground: 24 28% 12%;
@@ -47,13 +19,12 @@
     --muted-foreground: 24 14% 42%;
     --accent: 36 65% 38%;
     --accent-foreground: 0 0% 100%;
->>>>>>> Stashed changes
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 100%;
     --border: 36 18% 82%;
     --input: 36 18% 82%;
     --ring: 36 65% 38%;
-    --radius: 0.375rem;
+    --radius: 0.625rem;
     --gold: 36 65% 38%;
   }
 
@@ -94,10 +65,29 @@
     @apply font-headline tracking-tight;
     letter-spacing: -0.02em;
   }
-  /* Tabular numbers for all financial/mono text */
   .font-mono, code, kbd {
     font-variant-numeric: tabular-nums;
     font-feature-settings: "tnum";
+  }
+}
+
+@layer components {
+  /* Primary button — amber gold with warm glow */
+  .btn-primary,
+  [class*="Button"][data-variant="default"],
+  button[class*="bg-primary"] {
+    @apply rounded-full transition-all duration-200;
+    box-shadow: 0 1px 3px hsl(var(--primary) / 0.25), 0 0 0 0 hsl(var(--primary) / 0);
+  }
+  .btn-primary:hover,
+  button[class*="bg-primary"]:hover {
+    box-shadow: 0 4px 14px hsl(var(--primary) / 0.35), 0 1px 3px hsl(var(--primary) / 0.2);
+    transform: translateY(-1px);
+  }
+  .btn-primary:active,
+  button[class*="bg-primary"]:active {
+    transform: translateY(0);
+    box-shadow: 0 1px 4px hsl(var(--primary) / 0.2);
   }
 }
 
